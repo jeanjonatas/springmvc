@@ -10,20 +10,23 @@
 <title>Cadastro de produtos</title>
 </head>
 <body>
-	<form method="post" action="/springmvc/produtos">
+	<form:form action="/springmvc/produtos" method="post"
+		commandName="product" enctype="multipart/form-data">
 		<div>
-			<label for="title">Titulo</label> <input type="text" name="title"
-				id="title" />
+			<label for="title">Titulo</label>
+			<form:input path="title" />
+			<form:errors path="title" />
 		</div>
 		<div>
 			<label for="description">Descrição</label>
-			<textarea rows="10" cols="20" name="description" id="description">
-</textarea>
+			<form:textarea path="description" rows="10" cols="20" />
 		</div>
 		<div>
-			<label for="pages">Número de paginas</label><input type="text"
-				name="pages" id="pages" />
+			<label for="pages">Número de paginas</label>
+			<form:input path="pages" />
+			<form:errors path="pages" />
 		</div>
+
 
 		<c:forEach items="${types}" var="bookType" varStatus="status">
 			<div>
@@ -33,10 +36,21 @@
 					name="prices[${status.index}].bookType" value="${bookType}" />
 			</div>
 		</c:forEach>
+		
+		<div>
+			<label for="releaseDate">Data de lançamento</label>
+			<form:input path="releaseDate" type="date" />
+			<form:errors path="releaseDate" />
+		</div>
+		<div>
+			<label for="summary">Sumario do Livro</label>
+			<input type="file" name="summary"/>
+			<form:errors path="summaryPath"/>
+		</div>
 		<div>
 			<input type="submit" value="Enviar">
 		</div>
-
-	</form>
+	</form:form>
+	
 </body>
 </html>
