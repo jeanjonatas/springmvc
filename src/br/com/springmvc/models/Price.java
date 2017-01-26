@@ -31,7 +31,7 @@ public class Price {
 		return bookType;
 	}
 
-	public void setBookTpe(BookType bookTpe) {
+	public void setBookType(BookType bookTpe) {
 		this.bookType = bookTpe;
 	}
 

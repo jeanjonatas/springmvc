@@ -1,16 +1,17 @@
 package br.com.springmvc.controllers;
 
-import javax.servlet.http.Part;
 import javax.transaction.Transactional;
 import javax.validation.Valid;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.WebDataBinder;
-import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -19,7 +20,6 @@ import br.com.springmvc.daos.ProductDAO;
 import br.com.springmvc.infra.FileSaver;
 import br.com.springmvc.models.Price.BookType;
 import br.com.springmvc.models.Product;
-import br.com.springmvc.validations.ProductValidator;
 
 @Controller
 @Transactional
@@ -36,6 +36,7 @@ public class ProductController {
 	private FileSaver fileSaver;
 	
 	@RequestMapping(method = RequestMethod.POST, name="saveProduct") // Post usado quando há necessidade de criação de
+	@CacheEvict(value="books", allEntries=true)			//Evita cache ao entrar esse metodo e invalida todos no cache
 	public ModelAndView save(MultipartFile summary,@Valid Product product,BindingResult bindingResult, RedirectAttributes redirectAttributes) {
 		if(bindingResult.hasErrors()){
 			return form(product);
@@ -77,10 +78,29 @@ public class ProductController {
 	}
 
 	@RequestMapping(method = RequestMethod.GET) // Get usado quando quero
-												// recuperar uma informacao
+	@Cacheable(value="books")										// recuperar uma informacao
 	public ModelAndView list() {
 		ModelAndView modelAndView = new ModelAndView("products/list");
 		modelAndView.addObject("products", productDAO.list());
 		return modelAndView;
 	}
+	
+	
+	@RequestMapping(method=RequestMethod.GET, value="/show")
+	public ModelAndView show(Integer id){
+		
+		ModelAndView modelAndView = new ModelAndView("products/show");
+		Product product = productDAO.find(id);
+		modelAndView.addObject("product", product);
+		return modelAndView;
+	}
+	
+	/*
+	@RequestMapping(method=RequestMethod.GET, value="json")
+	@ResponseBody		//O retorno do metodo e para ser usado diretamente como corpo de resposta
+	public List<Product> listJson(){
+		
+		return productDAO.list();
+	}
+	*/
 }

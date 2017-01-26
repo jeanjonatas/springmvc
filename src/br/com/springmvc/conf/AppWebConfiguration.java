@@ -1,5 +1,14 @@
 package br.com.springmvc.conf;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.cache.concurrent.ConcurrentMapCache;
+import org.springframework.cache.concurrent.ConcurrentMapCacheManager;
+import org.springframework.cache.guava.GuavaCacheManager;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -9,14 +18,22 @@ import org.springframework.format.datetime.DateFormatter;
 import org.springframework.format.datetime.DateFormatterRegistrar;
 import org.springframework.format.support.DefaultFormattingConversionService;
 import org.springframework.format.support.FormattingConversionService;
+import org.springframework.web.accept.ContentNegotiationManager;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartResolver;
 import org.springframework.web.multipart.support.StandardServletMultipartResolver;
+import org.springframework.web.servlet.ViewResolver;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import org.springframework.web.servlet.view.ContentNegotiatingViewResolver;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
+
+import com.google.common.cache.CacheBuilder;
 
 import br.com.springmvc.controllers.HomeController;
 import br.com.springmvc.daos.ProductDAO;
 import br.com.springmvc.infra.FileSaver;
+import br.com.springmvc.models.ShoppingCart;
+import br.com.springmvc.viewresolver.JsonViewResolver;
 
 /*
  *	Objetivo principal é expor para a servlet do Spring MVC quais as classes devem ser lidas  e
@@ -24,7 +41,8 @@ import br.com.springmvc.infra.FileSaver;
  * 
  * */
 @EnableWebMvc
-@ComponentScan(basePackageClasses = { HomeController.class, ProductDAO.class, FileSaver.class}) // indico quais pacotes devem ser lidos
+@ComponentScan(basePackages = "br.com.springmvc") // indico quais pacotes devem ser lidos
+@EnableCaching
 public class AppWebConfiguration {
 
 	@Bean		//Essa anotation diz que o retorno desse metodo deve ser registrado como um objeto gerenciado pelo container
@@ -37,6 +55,8 @@ public class AppWebConfiguration {
 		InternalResourceViewResolver resolver = new InternalResourceViewResolver();
 		resolver.setPrefix("/WEB-INF/views/");
 		resolver.setSuffix(".jsp");
+		//nome da classe que será vista e posso usar com diferente escopo na jsp
+		resolver.setExposedContextBeanNames("shoppingCart");
 		return resolver;
 	}
 		
@@ -72,5 +92,38 @@ public class AppWebConfiguration {
 	@Bean
 	public	MultipartResolver	multipartResolver(){
 				return	new	StandardServletMultipartResolver();
+	}
+	
+	@Bean
+	public RestTemplate restTemplate(){
+		return new RestTemplate();
+	}
+	
+	@Bean
+	public CacheManager cacheManager(){
+		//construtor de cache com o tamanho maximo de 5 min
+		
+		CacheBuilder<Object, Object> builder = CacheBuilder.newBuilder().maximumSize(100).expireAfterAccess(5, TimeUnit.MINUTES);
+		GuavaCacheManager cacheManager = new GuavaCacheManager();
+		cacheManager.setCacheBuilder(builder);
+		return cacheManager;
+		
+	}
+	@Bean
+	public ViewResolver contentNegotiationViewResolver(ContentNegotiationManager manager){
+		List<ViewResolver> resolvers = new ArrayList<>();
+		
+		//Peguei o mesmo objeto do retorno de internalResource
+		resolvers.add(internalResourceViewResolver());
+		resolvers.add(new JsonViewResolver());
+		//Adicionei um objewto de json na list
+		
+		ContentNegotiatingViewResolver resolver = new ContentNegotiatingViewResolver();
+		resolver.setViewResolvers(resolvers);
+		resolver.setContentNegotiationManager(manager);
+		
+		return resolver;
+		
+		
 	}
 }

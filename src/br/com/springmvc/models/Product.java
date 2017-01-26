@@ -1,5 +1,6 @@
 package br.com.springmvc.models;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -14,6 +15,8 @@ import javax.validation.constraints.Min;
 import org.hibernate.validator.constraints.NotBlank;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
+
+import br.com.springmvc.models.Price.BookType;
 
 @Entity		//JPA, indica que essa classe vai virar uma tabela
 public class Product {
@@ -101,5 +104,18 @@ public class Product {
 	public void setSummaryPath(String summaryPath) {
 		this.summaryPath = summaryPath;
 	}
+	
+	//Stream do java 8, disponibiliza inumeras operacoes atreladas com collections, entre elas filter, has e map
+	//Aplico a mudanca pra interface Stream, aplico um filtro
+	public BigDecimal priceFor(BookType bookType) {
+		
+		/*filtra todos q comeca com o mesmo booktype e depois pega o primeiro com mesmo tipo*/
+		
+		return prices
+				.stream()
+				.filter(price -> price.getBookType().equals(bookType))
+				.findFirst().get().getValue();
+	}
 
 }
+

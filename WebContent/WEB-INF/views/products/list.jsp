@@ -1,4 +1,5 @@
 <%@ taglib uri="http://java.sun.com/jstl/core_rt" prefix="c"%>
+<%@ taglib uri="http://www.springframework.org/tags" prefix="spring" %>
 <%@ page language="java" contentType="text/html; charset=ISO-8859-1"
 	pageEncoding="ISO-8859-1"%>
 
@@ -6,7 +7,7 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>Insert title here</title>
+<title>ListaProdutos</title>
 </head>
 <body>
 	<table>
@@ -16,7 +17,9 @@
 		</tr>
 		<c:forEach items="${products}" var="product">
 		<tr>
-			<td>${product.title}</td>
+			<td>
+				<a href="${spring:mvcUrl('PC#show').arg(0,product.id).build()}">
+			${product.title}</a></td>
 			<td><c:forEach items="${product.prices}" var="price">
 				     	[${price.value}	--	${price.bookType}]
 				     </c:forEach>
@@ -26,5 +29,7 @@
 		</c:forEach>
 	</table>
 	<h1>${sucesso}</h1>
+	<li><a href="${spring:mvcUrl('SCC#items').build()}" rel="nofollow">
+					Seu carrinho (${shoppingCart.quantity}) </a></li>
 </body>
 </html>
